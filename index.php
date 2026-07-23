@@ -8,4 +8,6 @@ header("Referrer-Policy: strict-origin-when-cross-origin");
 header("Permissions-Policy: geolocation=(), camera=(), microphone=()");
 header_remove("X-Powered-By");
 
-include "router.php";
+require_once "router.php";
+require_once "config.php";
+require_once "database.php";
