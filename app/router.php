@@ -51,7 +51,7 @@ function find_match_route_handler(): array|null
 }
 
 function add_route(
-    string $method = "GET",
+    string $method,
     string $path,
     string $handler_file_name,
 ): void {
