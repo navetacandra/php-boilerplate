@@ -1,5 +1,4 @@
 <?php
-
 $routes = [
     "/" => "info.php",
     "/posts/:postId" => "post.php",
@@ -36,7 +35,7 @@ function find_match_route($routes)
         {
             $key = $param_regex[$i][0];
             $val = $params[$i][0];
-            $_PARAM[$key] = $val;
+            $_RO[$key] = $val;
         }
 
         return $handler;
@@ -48,9 +47,9 @@ function find_match_route($routes)
 $handler = find_match_route($routes);
 if ($handler == "") {
     header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found", true, 404);
-    include "./handler/404.php";
+    require_once __DIR__ . "/handler/404.php";
 
     die;
 }
 
-include "./handler/" . $handler;
+require_once __DIR__ . "/handler/" . $handler;

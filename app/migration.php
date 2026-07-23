@@ -1,14 +1,9 @@
 <?php
-
 // Block HTTP request
-if(isset($_SERVER["REQUEST_URI"]))
-{
-    header($_SERVER["SERVER_PROTOCOL"] . " 500 Server Error", true, 500);
-    die;
-}
+if(isset($_SERVER["REQUEST_URI"])) die();
 
-require_once "config.php";
-require_once "database.php";
+require_once __DIR__ . "/config.php";
+require_once __DIR__ . "/database.php";
 
 global $db;
 $migration_file = "./migration.sql";
