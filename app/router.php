@@ -1,8 +1,5 @@
 <?php
-$routes = [
-    "/" => "info.php",
-    "/posts/:postId" => "post.php",
-];
+$routes = [];
 
 function get_clean_url(): string
 {
@@ -25,41 +22,74 @@ function extract_params(string $path, array $params): void
     }
 }
 
-function find_match_route_handler(array $routes): string
+function find_match_route_handler(): array|null
 {
-    global $_PARAM;
-    $_PARAM = [];
+    global $routes;
     $current = get_clean_url();
 
-    foreach ($routes as $path => $handler) {
-        $path_regex = preg_replace("/\//", "\/", $path);
-        $path_regex =
-            "/^" . preg_replace("/:\w+/", "([^\/]+)", $path_regex) . "$/";
+    if (isset($routes[$current])) {
+        return $routes[$current];
+    }
 
+    foreach ($routes as $path => $info) {
         $match = preg_match_all(
-            $path_regex,
+            $info["pattern"],
             $current,
             $params,
             PREG_PATTERN_ORDER,
         );
 
-        if (!$match) {
-            continue;
+        if ($match) {
+            if (count($params) > 1) {
+                extract_params($path, $params);
+            }
+            return $info;
         }
-
-        extract_params($path, $params);
-        return $handler;
     }
 
-    return "";
+    return null;
 }
 
-$handler = find_match_route_handler($routes);
-if ($handler == "") {
-    header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found", true, 404);
-    require_once __DIR__ . "/handler/404.php";
+function add_route(
+    string $method = "GET",
+    string $path,
+    string $handler_file_name,
+): void {
+    global $routes;
+    $pattern = str_replace("/", "\/", $path);
+    $pattern = preg_replace("/:\w+/", "([^\/]+)", $pattern);
 
-    die();
+    if (!isset($routes[$path])) {
+        $routes[$path] = [
+            $method => $handler_file_name,
+            "pattern" => "/^{$pattern}$/i",
+        ];
+        return;
+    }
+
+    $routes[$path][$method] = $handler_file_name;
 }
 
-require_once __DIR__ . "/handler/" . $handler;
+function route_resolve(): void
+{
+    $handler_info = find_match_route_handler();
+    if ($handler_info == null) {
+        header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found", true, 404);
+        require_once __DIR__ . "/handler/404.php";
+
+        die();
+    }
+
+    // Unregistered method handler
+    $method = $_SERVER["REQUEST_METHOD"];
+    if (!isset($handler_info[$method])) {
+        header(
+            $_SERVER["SERVER_PROTOCOL"] . " 405 Method Not Allowed",
+            true,
+            405,
+        );
+        die();
+    }
+
+    require_once __DIR__ . "/handler/" . $handler_info[$method];
+}

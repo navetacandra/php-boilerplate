@@ -10,3 +10,11 @@ header_remove("X-Powered-By");
 require_once __DIR__ . "/router.php";
 require_once __DIR__ . "/config.php";
 require_once __DIR__ . "/database.php";
+
+// Write your code below.
+
+add_route("GET", "/", "home.php");
+add_route("GET", "/info", "info.php");
+add_route("GET", "/post/:id", "post.php");
+
+route_resolve();
